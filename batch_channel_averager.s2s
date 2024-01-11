@@ -1,0 +1,49 @@
+const DATA_DIRECTORY$ := "C:\\Users\\emena\\OneDrive - University of Rhode Island\\Desktop\\";
+const RESULTS_DIRECTORY$ := "C:\\code\\elvia\\results\\";
+
+var v16%; ' View created by SetAverage
+var v15%; ' View created by FileOpen()
+
+Func ProcessChannel(channel%, fileName$);
+    var ch%; ' MemChan created channel
+
+    v15% := FileOpen(DATA_DIRECTORY$ + fileName$, 0, 3);
+    Window(1.87891, 4.15184, 67.6931, 50.1779);
+    
+    ch% := MemChan(3);         ' Add new Event+ channel
+    ChanShow(ch%);             ' Make it visible
+    MemImport(ch%, 10, 0.0, MaxTime());
+    
+    v16% := SetAverage(channel%, 150000, 0.2, ch%, 1, 1);
+    
+    FrontView(View());
+    Process(View(-1).Cursor(1), View(-1).Cursor(2), 0, 1);
+    FileSaveAs(RESULTS_DIRECTORY$ + fileName$ + "\\" + "channel" + Str$(channel%) + ".srf", 4);
+    return 1;
+end;
+
+Func ProcessFile(fileName$);
+    var channel%; 
+    for channel% := 1 to 4 do
+        ProcessChannel(channel%, fileName$);
+    next;
+end;
+
+' Set the data directory
+FilePathSet(DATA_DIRECTORY$, 0);
+
+' Get all files in the data directory
+var files$[200];
+var numFiles%;
+numFiles% := FileList(files$[], 0, "*.smrx");
+
+if numFiles% < 1 then
+    Message("No data files in directory!");
+    halt;
+endif;
+
+' Process each file
+var fileIndex%;
+for fileIndex% := 0 to numFiles% - 1 do
+    ProcessFile(files$[fileIndex%]);
+next;
